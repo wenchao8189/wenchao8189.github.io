@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        canvas{
+            border: 1px solid #000;
+            color:darkred;
+        }
+    </style>
+</head>
+<body>
+    <canvas width="1200" height="600"></canvas>
+</body>
+</html>
+<script>
+
+    var canvas=document.querySelector('canvas');
+
+    var ctx=canvas.getContext('2d');
+
+    function Time(opt){
+        for(var key in opt){
+            this[key]=opt[key];
+        }
+        this.inti();
+    };
+
+    Time.prototype={
+        constructor:Time,
+        inti:function(){
+            var _this=this;
+            trim=setInterval(function(){
+                ctx.clearRect(0,0,canvas.width,canvas.height)
+                _this.dayuan();
+                _this.drawTicks();
+                _this.drawPoints();
+                //设置当前时间
+                ctx.save();
+                ctx.fillStyle=_this.point.sec.color;
+                ctx.font='24px 微软雅黑';
+                ctx.fillText(new Date().toLocaleString(),500,50);
+                ctx.restore();
+            },1000)
+        },
+        //绘制大圆
+        dayuan:function(){
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.strokeStyle=this.bigColor;
+            ctx.arc(this.bigX,this.bigY,this.bigR,0,2*Math.PI);
+            ctx.lineWidth=this.bigWidth;
+            ctx.stroke();
+            ctx.restore();
+        },
+        //绘制刻度线
+        drawTicks:function(){
+            var count=-Math.PI/3;
+            var zhi=2*Math.PI/60;
+            for(var i=0;i<60;i++){
+                var radius=count+zhi*i;
+                var length,lingWidth ,lingColor;
+                if(i%5==0){
+                    lingColor=this.tick.linstyle;
+                    length=this.tick.length;
+                    lingWidth=this.tick.lingWidth;
+                    console.log(i/ 5+1);
+                    this.drawText(i/5+1,radius,this.point.sec.color);
+
+                }else{
+                    lingColor=this.tick
+                    length=this.tick.smallLength;
+                    lingWidth=this.tick.smallWidth;
+                }
+                //起点坐标
+                var h1=(this.bigR-this.bigWidth/2)*Math.sin(radius);
+                var b1=(this.bigR-this.bigWidth/2)*Math.cos(radius);
+
+                var x1=this.bigX+b1;
+                var y1=this.bigY+h1;
+
+                //终点坐标
+                var h2=(this.bigR-this.bigWidth/2-length)*Math.sin(radius) ;
+                var b2=(this.bigR-this.bigWidth/2-length)*Math.cos(radius) ;
+
+                var x2=this.bigX+b2;
+                var y2=this.bigY+h2;
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle=lingColor;
+                ctx.moveTo(x1,y1);
+                ctx.lineTo(x2,y2);
+                ctx.lineWidth=lingWidth;
+                ctx.lineCap='round';
+                ctx.stroke();
+                ctx.restore();
+            }
+        },
+        //绘制指针
+        drawPoints:function(){
+            var date=new Date();
+            var hous=date.getHours()%12;
+            var min=date.getMinutes();
+            var sec=date.getSeconds();
+//            console.log(hous);
+            var r=((min*60+sec)/3600)*Math.PI/6
+
+
+            var housRadian=hous*2*Math.PI/12-Math.PI/2+r;
+
+            var rm=(Math.PI*sec/60/30)
+            var minRadian=min*2*Math.PI/60-Math.PI/2+rm;
+            var secRadian=sec*2*Math.PI/60-Math.PI/2;
+
+            // 因为有三个指针，所有再封装一个方法比较方便
+            this.drawSinglePoint(40,housRadian,8,this.point.hous.color);
+            this.drawSinglePoint(80,minRadian,5,this.point.min.color);
+            this.drawSinglePoint(120,secRadian,3,this.point.sec.color);
+
+        },
+        drawSinglePoint:function(length,Radian,width,colors){
+            var h=length*Math.sin(Radian);
+            var b=length*Math.cos(Radian);
+            var x=this.bigX+b;
+            var y=this.bigY+h;
+            ctx.save();
+            ctx.beginPath();
+            ctx.strokeStyle=colors
+            ctx.moveTo(this.bigX,this.bigY);
+            ctx.lineTo(x,y);
+            ctx.lineWidth=width;
+            ctx.lineCap='round';
+            ctx.stroke();
+            ctx.restore();
+        },
+        //设置文字
+        drawText:function(text,radius){
+            var texlength=this.bigR-this.tick.length-25;
+
+            var h=texlength*Math.sin(radius);
+            var b=texlength*Math.cos(radius);
+
+            var x=this.bigX+b;
+            var y=this.bigY+h;
+
+            ctx.save();
+            ctx.font='20px 微软雅黑';
+            ctx.textAlign='center';
+            ctx.textBaseline="middle";
+            ctx.fillText(text,x,y);
+            ctx.restore();
+        }
+    }
+
+    new Time({
+        bigX:600,
+        bigY:300,
+        bigR:200,
+        bigWidth:10,
+        bigColor:'dimgray',
+        tick:{
+            length:24,
+            lingWidth:4,
+            smallLength:10,
+            smallWidth:2,
+            linstyle:'deepskyblue',
+            smalllingstyle:'blue'
+        },
+        point:{
+            hous:{
+                color:"skyblue"
+            },
+            min:{
+                color:"purple"
+            },
+            sec:{
+                color:'red'
+            }
+        }
+    })
+</script>
